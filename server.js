@@ -9,12 +9,17 @@ const wss = new WebSocket.Server({
   server,
   path: "/websocket", // custom path for WebSocket endpoint
   maxPayload: 1024 * 1024, // 1MB limit on incoming messages
-  handleProtocols: (protocols, request) => {
-    console.log("Requested protocols:", protocols);
-    // Only accept 'chat' sub-protocol
-    return protocols.has("chat") ? "chat" : false;
+handleProtocols: (protocols, request) => {
+  console.log("Requested protocols:", protocols);
 
-  }
+  // Support both custom 'chat' and STOMP sub-protocols
+  if (protocols.has("chat")) return "chat";
+  if (protocols.has("v11.stomp")) return "v11.stomp";
+  if (protocols.has("v10.stomp")) return "v10.stomp";
+
+  return false; // reject connection if none are supported
+}
+
 });
 
 const clients = new Set(); // to keep track of all connected clients
